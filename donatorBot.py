@@ -33,7 +33,7 @@ async def help(ctx):
     listt = ("Command to list already created instances.")
     embed.add_field(name="""/listt *two t's""", value=listt, inline=False)
 
-    view = ("View an instance already created.")
+    view = ("View an instance already create in active mode. A user simply clicks on the emoji to register for the block.")
     embed.add_field(name="""/view <isntance>""", value=view, inline=False)
 
     delete = ("Delete an instance")

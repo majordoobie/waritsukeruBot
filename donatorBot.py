@@ -2,6 +2,7 @@ from discord.ext import commands
 import discord
 from configparser import ConfigParser
 import asyncio
+import time
 
 config = ConfigParser(allow_no_value=True)
 config.read('donatorConfig.ini')
@@ -22,23 +23,28 @@ async def kill(ctx):
 
 @discord_client.command()
 async def help(ctx):
-    desc = ("I am Happy the Exceed donation bot! Use me to create instances of volunteer requests. Create an instance "
+    desc = ("My name is Happy, the Exceed donation bot! Use me to create instances of volunteer requests. Create an instance "
     "by supplying a name and the amount of blocks you want to create. 1 block equals 5 bases.\n\nOnce you create your instance "
-    "you can view the panel with a /view <instance> command. This will display the panel with corresponding reactions that users can "
+    "you can view the panel with a /view <instance> command. This will display the panel with the corresponding reactions that users can "
     "click on. When a user clicks on the reaction, their discord name will be displayed on the panel. Only CoC Leaders can unregister "
     "a clan mates call.")
     embed = discord.Embed(title='Happy!', description= desc, color=0x8A2BE2)
 
-    create = ("Command to create a new instance of a donate panel. The command takes two arguments "
+    create = ("Command to create a new instance of a donation panel. The command takes two arguments "
     "a name, and a quantity. The name can be anything for example, the clan that is currently using it. Quantity is "
-    "the ammount of blocks you would like to display. Please DO NOT use spaces between names.")
+    "the ammount of blocks you would like to display. To use spaces between names, please use quotes.\n "
+    "Example:\n"
+    '/create "CWL Zulu Day 3" 4\n'
+    '/view "CWL Zulu Day 3"')
     embed.add_field(name="""/create <string> <int>""", value=create, inline=False)
 
     listt = ("Command to list already created instances.")
     embed.add_field(name="""/listing""", value=listt, inline=False)
 
-    view = ("View an instance already create in active mode. A user simply clicks on the emoji to register for the block.")
-    embed.add_field(name="""/view <instance>""", value=view, inline=False)
+    view = ("View an instance already create in active mode. A user simply clicks on the emoji to register for the block. "
+    "By default the panel will expire in 60 seconds. You can supply and an optional timeout in seconds. Be aware of not activating "
+    "multiple instances as it will result in unpredicted behavior. Use the <stop> emoji to quickly stop an active panel.")
+    embed.add_field(name="""/view <instance> <timeout:seconds>""", value=view, inline=False)
 
     delete = ("Delete an instance.")
     embed.add_field(name="""/delete <instance>""", value=delete, inline=False)
@@ -47,7 +53,9 @@ async def help(ctx):
     embed.add_field(name="""/clear <instance>""", value=clear, inline=False)
 
     example = ("----------------\nExamples")
-    val = ("""/create "cwl zulu" 3 \n/view "cwl zulu" """)
+    val = ("""/create "CWL Zulu Day 3" 4 \n/view "CWL Zulu Day 3"\n/clear "CWL Zulu Day 3" 
+    
+    \n\n\nwaritsukeruBot Version 1.1\nhttps://github.com/majordoobie/waritsukeruBot""")
     embed.add_field(name=example, value=val, inline=False)
     await ctx.send(embed = embed)
 
@@ -59,7 +67,7 @@ async def help(ctx):
 async def create(ctx, name, block):
     if authorized(ctx.message.author.roles):
         if block.isdigit():
-            name = name.upper()
+            name = name.title()
             lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
 
             config.set('instances', name)
@@ -85,13 +93,14 @@ async def create_handler(ctx, error):
 
 @discord_client.command()
 async def listing(ctx):
-    await ctx.send(embed = discord.Embed(title="**Instances:**", color=0x8A2BE2))
+    #await ctx.send(embed = discord.Embed(title="**Instances:**", color=0x8A2BE2))
+    await ctx.send("__**Instances**__")
     for instance in config['instances']:
-        await ctx.send(f"```{'':>6}{instance}```")
+        await ctx.send(f"```{'':>6}{instance.title():<20} Blocks: {config[instance.title()]['blocks']}```")
 
 @discord_client.command()
 async def delete(ctx, instance):
-    instance = instance.upper()
+    instance = instance.title()
     if authorized(ctx.message.author.roles):
         if instance in config['instances']:
             config['instances'].pop(instance)
@@ -110,18 +119,27 @@ async def delete_handler(ctx, error):
     await ctx.send(embed = discord.Embed(title="ERROR", description=error.__str__(), color=0xFF0000))
 
 @discord_client.command()
-async def view(ctx, instance):
-    instance = instance.upper()
+async def view(ctx, instance, *opt):
+    if opt:
+        var = opt[0]
+        if var.isdigit():
+            timeout = var
+    else:
+        timeout = 60
+
+    instance = instance.title()
     if instance in config['instances']:
         block = config[instance]['blocks']
         lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
         lister2 = [ '1 - 5', '6 - 10', '11 - 15', '16 - 20', '21 - 25', '26 - 30', '31 - 35', '36 - 40', '41 - 45', '46 - 50' ]
+        lister3 = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
 
         msg = ""
         for blk in range(0, int(block)):
-            msg += "[{:>7}]: {}\n".format(lister2[blk], config[instance][lister[blk]])
-        msg += "[{:>7}]: {}\n".format("TopOff", config[instance]['topoff'])
+            msg += "[{:>2}][{:>7}]: {}\n".format(lister3[blk], lister2[blk], config[instance][lister[blk]])
+        msg += "[ ~][{:>7}]: {}\n".format("TopOff", config[instance]['topoff'])
 
+        await ctx.send(embed = discord.Embed(title=f"**Instance: {instance}**", color=0x8A2BE2))
         panel = await ctx.send(f"```{msg}```")
 
         for blk in range(0, int(block)):
@@ -129,20 +147,24 @@ async def view(ctx, instance):
         await panel.add_reaction(config['Emoji']['topoff'])
         await panel.add_reaction(config['Emoji']['stop'])
         
+        
+        
         def check(reaction, user):
+            #Change this when moving to real
             return str(user).startswith("Happy") == False and str(reaction.emoji)[2:-1] in config['Emoji'].values()
+            #return str(user).startswith("Kitty") == False and str(reaction.emoji)[2:-1] in config['Emoji'].values()
         
-        
+        bishop = True
         try:
-            while True:
-                reaction, user = await ctx.bot.wait_for('reaction_add', timeout=10.0, check=check)
-                #user = ctx.message.author
+            while bishop:
+                reaction, user = await ctx.bot.wait_for('reaction_add', timeout = int(timeout), check=check)
                 key = ''
                 for k,v in config['Emoji'].items():
                     if str(reaction.emoji)[2:-1] == v:
                         if v == config['Emoji']['stop']:
-                            await ctx.send(f"Terminating. Use /view {instance} to re-enable me.")
+                            await ctx.send(f"Terminating. Use /view {instance} to re-enable panel.")
                             await panel.clear_reactions()
+                            bishop = False
                             return
                         else:
                             key = k
@@ -159,17 +181,17 @@ async def view(ctx, instance):
 
                 with open('donatorConfig.ini', 'w') as f:
                     config.write(f)
-                await panel.edit(content=f"```{new_panel(block, lister2, instance, lister)}```")
 
-            
-                
+                await panel.edit(content=f"```{new_panel(block, lister2, instance, lister, lister3)}```")
+        
         except asyncio.TimeoutError:
             await panel.clear_reactions()
-            await ctx.send("Times up. Use /view <instance> to continue editing.")
+            await ctx.send(f"Times up! Use /view {instance} to re-enable panel. <a:{config['Emoji']['nyancat_big']}>")
+            bishop = False
 
 @discord_client.command()
 async def clear(ctx, instance):
-    instance = instance.upper()
+    instance = instance.title()
     if authorized(ctx.message.author.roles):
         if instance in config['instances']:
             block = config[instance]['blocks']
@@ -183,11 +205,11 @@ async def clear(ctx, instance):
         await ctx.send(f"Sorry, only leaders can do that. Have a nyan cat instead. <a:{config['Emoji']['nyancat_big']}>")
 
 
-def new_panel(block, lister2, instance, lister):
+def new_panel(block, lister2, instance, lister, lister3):
     msg = ""
     for blk in range(0, int(block)):
-        msg += "[{:>7}]: {}\n".format(lister2[blk], config[instance][lister[blk]])
-    msg += "[{:>7}]: {}\n".format("TopOff", config[instance]['topoff'])
+        msg += "[{:2>}][{:>7}]: {}\n".format(lister3[blk], lister2[blk], config[instance][lister[blk]])
+    msg += "[ ~][{:>7}]: {}\n".format("TopOff", config[instance]['topoff'])
     return msg
 
 

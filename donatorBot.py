@@ -2,7 +2,6 @@ from discord.ext import commands
 import discord
 from configparser import ConfigParser
 import asyncio
-import time
 
 config = ConfigParser(allow_no_value=True)
 config.read('donatorConfig.ini')

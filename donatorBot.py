@@ -51,6 +51,9 @@ async def help(ctx):
     clear = ("Clear an instance.")
     embed.add_field(name="""/clear <instance>""", value=clear, inline=False)
 
+    edit = "Edit an instances available blocks. You can either add or subtract while maintaining the topoff value."
+    embed.add_field(name="""/edit <instance> <(+/-) int>""", value=edit, inline=False)
+
     example = ("----------------\nExamples")
     val = ("""/create "CWL Zulu Day 3" 4 \n/view "CWL Zulu Day 3"\n/clear "CWL Zulu Day 3" 
     
@@ -65,8 +68,8 @@ async def help(ctx):
 @discord_client.command()
 async def create(ctx, name, block):
     if authorized(ctx.message.author.roles):
+        name = name.title()
         if block.isdigit():
-            name = name.title()
             lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
 
             config.set('instances', name)
@@ -150,8 +153,8 @@ async def view(ctx, instance, *opt):
         
         def check(reaction, user):
             #Change this when moving to real
-            return str(user).startswith("Happy") == False and str(reaction.emoji)[2:-1] in config['Emoji'].values()
-            #return str(user).startswith("Kitty") == False and str(reaction.emoji)[2:-1] in config['Emoji'].values()
+            #return str(user).startswith("Happy") == False and str(reaction.emoji)[2:-1] in config['Emoji'].values()
+            return str(user).startswith("Kitty") == False and str(reaction.emoji)[2:-1] in config['Emoji'].values()
         
         bishop = True
         try:
@@ -187,6 +190,59 @@ async def view(ctx, instance, *opt):
             await panel.clear_reactions()
             await ctx.send(f"Times up! Use /view {instance} to re-enable panel. <a:{config['Emoji']['nyancat_big']}>")
             bishop = False
+
+@discord_client.command()
+async def edit(ctx, instance, quant):
+    if authorized(ctx.message.author.roles):
+        instance = instance.title()
+        if quant[0] in ['+', '-']:
+            if quant[1:].isdigit():
+                operation = quant[0]
+                value = quant[1:]
+            else:
+                await ctx.send(embed = discord.Embed(title="INPUT ERROR\nValue must be a integer", color=0xFF0000))
+                return
+        else:
+            await ctx.send(embed = discord.Embed(title="INPUT ERROR\nOperator must be + or -.", color=0xFF0000))
+            return
+
+
+        if instance in config['instances']:
+            old_block = config[instance]['blocks']
+            if operation == "+":
+                new_block = int(old_block) + int(value)
+            elif operation == "-":
+                new_block = int(old_block) - int(value)
+
+            config.set(instance, "blocks", str(new_block)) # set new blocks value
+            topoffVal = config[instance]['topoff']
+            config[instance].pop('topoff')
+            lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+
+            if int(old_block) < int(new_block):
+                for i in range(0, int(new_block)):
+                    if lister[i] in config[instance]:
+                        pass
+                    else:
+                        config.set(instance, lister[i], '')
+                config.set(instance, "topoff", topoffVal)
+                await ctx.send(f"<:{config['Emoji']['happy']}> Aye!")
+                return
+
+            elif int(old_block) > int(new_block):
+                for i in range(int(new_block), int(old_block)):
+                    config[instance].pop(lister[i])
+                config.set(instance, "topoff", topoffVal)
+                await ctx.send(f"<:{config['Emoji']['happy']}> Aye!")
+                return
+        else:
+            await ctx.send(embed = discord.Embed(title="INPUT ERROR\nNo instance of that name available.", color=0xFF0000))
+            return
+
+
+@edit.error
+async def edit_handler(ctx, error):
+    await ctx.send(embed = discord.Embed(title="ERROR", description=error.__str__(), color=0xFF0000))
 
 @discord_client.command()
 async def clear(ctx, instance):

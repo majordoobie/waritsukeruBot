@@ -4,7 +4,8 @@ from configparser import ConfigParser
 import asyncio
 
 config = ConfigParser(allow_no_value=True)
-config.read('donatorConfig.ini')
+#config.read('donatorConfig.ini')
+config.read('/root/bots/waritsukeruBot/donatorConfig.ini')
 discord_client = commands.Bot(command_prefix = config['Bot']['Bot_Prefix'])
 discord_client.remove_command("help")
 
@@ -55,7 +56,7 @@ async def help(ctx):
     embed.add_field(name="""/edit <instance> <(+/-) int>""", value=edit, inline=False)
 
     example = ("----------------\nExamples")
-    val = ("""/create "CWL Zulu Day 3" 4 \n/view "CWL Zulu Day 3"\n/clear "CWL Zulu Day 3" 
+    val = ("""/create "CWL Zulu Day 3" 4 \n/view "CWL Zulu Day 3"\n/clear "CWL Zulu Day 3\n/edit "CWL Zulu Day 3" +2 
     
     \n\n\nwaritsukeruBot Version 1.1\nhttps://github.com/majordoobie/waritsukeruBot""")
     embed.add_field(name=example, value=val, inline=False)

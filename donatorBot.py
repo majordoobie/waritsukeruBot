@@ -68,7 +68,7 @@ async def help(ctx):
 
 @discord_client.command()
 async def create(ctx, name, block):
-    if authorized(ctx.message.author.roles):
+    if authorized(ctx.message.author):
         name = name.title()
         if block.isdigit():
             lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
@@ -104,7 +104,7 @@ async def listing(ctx):
 @discord_client.command()
 async def delete(ctx, instance):
     instance = instance.title()
-    if authorized(ctx.message.author.roles):
+    if authorized(ctx.message.author):
         if instance in config['instances']:
             config['instances'].pop(instance)
             config.pop(instance)
@@ -190,7 +190,7 @@ async def view(ctx, instance, *opt):
                     config.set(instance, key, user.display_name)
 
                 elif config[instance][key] != '':
-                    if authorized(user.roles):
+                    if authorized(user):
                         config.set(instance, key, '')
                         
                 else:
@@ -208,7 +208,7 @@ async def view(ctx, instance, *opt):
 
 @discord_client.command()
 async def edit(ctx, instance, quant):
-    if authorized(ctx.message.author.roles):
+    if authorized(ctx.message.author):
         instance = instance.title()
         if quant[0] in ['+', '-']:
             if quant[1:].isdigit():
@@ -272,7 +272,7 @@ async def edit_handler(ctx, error):
 @discord_client.command()
 async def clear(ctx, instance):
     instance = instance.title()
-    if authorized(ctx.message.author.roles):
+    if authorized(ctx.message.author):
         if instance in config['instances']:
             block = config[instance]['blocks']
             lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
@@ -296,8 +296,11 @@ async def test(ctx):
     return
 
 
-def authorized(users_roles):
-    for role in users_roles:
+def authorized(user):
+    if str(user.id) == str(config['Discord Roles']['server_keeper']):
+        return True
+
+    for role in user.roles:
         if role.name == "CoC Leadership":
             return True
     return False

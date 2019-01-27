@@ -4,8 +4,8 @@ from configparser import ConfigParser
 import asyncio
 
 config = ConfigParser(allow_no_value=True)
-#config.read('donatorConfig.ini')
-config.read('/root/bots/waritsukeruBot/donatorConfig.ini')
+config.read('donatorConfig.ini')
+#config.read('/root/bots/waritsukeruBot/donatorConfig.ini')
 discord_client = commands.Bot(command_prefix = config['Bot']['Bot_Prefix'])
 discord_client.remove_command("help")
 
@@ -58,7 +58,7 @@ async def help(ctx):
     example = ("----------------\nExamples")
     val = ("""/create "CWL Zulu Day 3" 4 \n/view "CWL Zulu Day 3"\n/clear "CWL Zulu Day 3\n/edit "CWL Zulu Day 3" +2 
     
-    \n\n\nwaritsukeruBot Version 1.1\nhttps://github.com/majordoobie/waritsukeruBot""")
+    \n\n\nwaritsukeruBot Version 1.2\nhttps://github.com/majordoobie/waritsukeruBot""")
     embed.add_field(name=example, value=val, inline=False)
     await ctx.send(embed = embed)
 
@@ -121,6 +121,22 @@ async def delete(ctx, instance):
 async def delete_handler(ctx, error):
     await ctx.send(embed = discord.Embed(title="ERROR", description=error.__str__(), color=0xFF0000))
 
+
+def new_panel(block, instance):
+    lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+    lister2 = [ '1 - 5', '6 - 10', '11 - 15', '16 - 20', '21 - 25', '26 - 30', '31 - 35', '36 - 40', '41 - 45', '46 - 50' ]
+    lister3 = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+
+    msg = ""
+    for blk in range(0, int(block)):
+        tf = 'TopOff'
+        #msg += "[{:2>}][{:>7}]: {}\n".format(lister3[blk], lister2[blk], config[instance][lister[blk]])
+        msg += f"[{lister3[blk]:>2}][{lister2[blk]:>7}]: {config[instance][lister[blk]]}\n"
+    msg += f"[ ~][{tf:>7}]: {config[instance]['topoff']}"
+    #msg += "[ ~][{:>7}]: {}\n".format("TopOff", config[instance]['topoff'])
+    return msg
+
+
 @discord_client.command()
 async def view(ctx, instance, *opt):
     if opt:
@@ -132,15 +148,13 @@ async def view(ctx, instance, *opt):
 
     instance = instance.title()
     if instance in config['instances']:
-        block = config[instance]['blocks']
         lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
-        lister2 = [ '1 - 5', '6 - 10', '11 - 15', '16 - 20', '21 - 25', '26 - 30', '31 - 35', '36 - 40', '41 - 45', '46 - 50' ]
-        lister3 = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+        block = config[instance]['blocks']
+        msg = new_panel(block, instance)
 
-        msg = ""
-        for blk in range(0, int(block)):
-            msg += "[{:>2}][{:>7}]: {}\n".format(lister3[blk], lister2[blk], config[instance][lister[blk]])
-        msg += "[ ~][{:>7}]: {}\n".format("TopOff", config[instance]['topoff'])
+        # for blk in range(0, int(block)):
+        #     msg += "[{:>2}][{:>7}]: {}\n".format(lister3[blk], lister2[blk], config[instance][lister[blk]])
+        # msg += "[ ~][{:>7}]: {}\n".format("TopOff", config[instance]['topoff'])
 
         await ctx.send(embed = discord.Embed(title=f"**Instance: {instance}**", color=0x8A2BE2))
         panel = await ctx.send(f"```{msg}```")
@@ -185,7 +199,7 @@ async def view(ctx, instance, *opt):
                 with open('donatorConfig.ini', 'w') as f:
                     config.write(f)
 
-                await panel.edit(content=f"```{new_panel(block, lister2, instance, lister, lister3)}```")
+                await panel.edit(content=f"```{new_panel(block,instance)}```")
         
         except asyncio.TimeoutError:
             await panel.clear_reactions()
@@ -212,8 +226,18 @@ async def edit(ctx, instance, quant):
             old_block = config[instance]['blocks']
             if operation == "+":
                 new_block = int(old_block) + int(value)
+                if 1 <= int(new_block) <=10:
+                    pass
+                else:
+                    await ctx.send(embed = discord.Embed(title=f"Block Range Error:\n\nNew Block Size: [ {new_block} ] \n(1<= [ Block Size ] <=10)", color=0xFF0000))
+                    return
             elif operation == "-":
                 new_block = int(old_block) - int(value)
+                if 1 <= int(new_block) <=10:
+                    pass
+                else:
+                    await ctx.send(embed = discord.Embed(title=f"Block Range Error:\n\nNew Block Size: [ {new_block} ] \n(1<= [ Block Size ] <=10)", color=0xFF0000))
+                    return
 
             config.set(instance, "blocks", str(new_block)) # set new blocks value
             topoffVal = config[instance]['topoff']
@@ -261,12 +285,7 @@ async def clear(ctx, instance):
         await ctx.send(f"Sorry, only leaders can do that. Have a nyan cat instead. <a:{config['Emoji']['nyancat_big']}>")
 
 
-def new_panel(block, lister2, instance, lister, lister3):
-    msg = ""
-    for blk in range(0, int(block)):
-        msg += "[{:2>}][{:>7}]: {}\n".format(lister3[blk], lister2[blk], config[instance][lister[blk]])
-    msg += "[ ~][{:>7}]: {}\n".format("TopOff", config[instance]['topoff'])
-    return msg
+
 
 
 @discord_client.command()

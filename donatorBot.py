@@ -4,6 +4,7 @@ from configparser import ConfigParser
 import asyncio
 from sys import argv
 from sys import exit as ex # Avoid exit built in
+import os
 
 #########
     # Set up the environment 
@@ -23,13 +24,21 @@ else:
 config = ConfigParser(allow_no_value=True)
 if botMode == "Live":
     configLoc = '/root/bots/waritsukeruBot/donatorConfig.ini'
-    config.read('/root/bots/waritsukeruBot/donatorConfig.ini')
-    discord_client = commands.Bot(command_prefix = "config['Bot']['Bot_Prefix']")
+    if os.path.exists(configLoc):
+        pass
+    else:
+        ex(f"Config file does not exist: {configLoc}")
+    config.read(configLoc)
+    discord_client = commands.Bot(command_prefix = f"{config['Bot']['bot_prefix']}")
     discord_client.remove_command("help")
 
 elif botMode == "Dev":
     configLoc = 'donatorConfig.ini'
-    config.read('donatorConfig.ini')
+    if os.path.exists(configLoc):
+        pass
+    else:
+        ex(f"Config file does not exist: {configLoc}")
+    config.read(configLoc)
     discord_client = commands.Bot(command_prefix = "dev.")
     discord_client.remove_command("help")
 
@@ -42,9 +51,10 @@ async def on_ready():
     print(f'\n\nLogged in as: {discord_client.user.name} - {discord_client.user.id}\nVDiscord Version: {discord.__version__}\n')
     print(f"Running in {botMode} mode.")
     if botMode == "Live":
-        print(f"This mode uses: {config['Bot']['Bot_Prefix']} as a prefix")
+        print(f"This mode uses: {config['Bot']['bot_Prefix']} as a prefix")
     if botMode == "Dev":
         print(f"This mode uses: [ dev. ] as a prefix")
+    print(f"Config file set to: /{configLoc}")
     await discord_client.change_presence(status=discord.Status.online, activity=discord.Game("with Natzu"))
 
 @discord_client.command()
@@ -498,5 +508,5 @@ def new_panel(block, instance):
     return msg
 
 if __name__ == "__main__":
-    discord_client.run(config['Bot']['Bot_Token'])
+    discord_client.run(config['Bot']['bot_Token'])
     

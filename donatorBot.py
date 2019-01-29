@@ -460,13 +460,19 @@ async def test(ctx):
  # Functions
 ###
 def wrongServer(ctx):
+    if botMode == "Live":
+        servv = "Reddit Zulu"
+    elif botMode == "Dev":
+        servv = "DevTester"
     data = (
-    f"BotName:  {discord_client.user.display_name}\n"
-    f"Guild:    {ctx.guild.name}\n"
-    f"GuildID:  {ctx.guild.id}\n"
-    f"Mode:     {botMode}\n"
-    f"Pref:     {ctx.prefix}\n"
-    f"Created:  {discord_client.user.created_at}"
+    f"BotName:      {discord_client.user.display_name}\n"
+    f"Cur_Guild:    {ctx.guild.name}\n"
+    f"Cur_GuildID:  {ctx.guild.id}\n"
+    f"Set_Guild:    {servv}\n"
+    f"Mode:         {botMode}\n"
+    f"ConfigLoc:    {configLoc}\n"
+    f"Pref:         {ctx.prefix}\n"
+    f"Created:      {discord_client.user.created_at}"
     )
     return data
 

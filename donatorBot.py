@@ -77,51 +77,49 @@ async def help(ctx):
 
     desc = ("My name is Happy, the Exceed donation bot! Use me to create instances of volunteer requests. Create an instance "
     "by supplying a name and the amount of blocks you want to create. 1 block equals 5 bases.\n\nOnce you create your instance "
-    "you can view the instance panel with a /view <instance> command. This will display the panel with the corresponding reactions that users can "
+    f"you can view the instance panel with a {prefx} <Panel Name> command. This will display the panel with the corresponding reactions that users can "
     "click on. When a user clicks on the reaction, their discord name will be displayed on the panel. Only CoC Leaders can unregister "
     "a clan mates call.\n\n")
-    embed = discord.Embed(title='Happy!', description= desc, color=0x8A2BE2)
+    desc = f"**{desc}**"
 
     create = ("Command to create a new instance panel. The command takes two arguments: "
     "a name, and a quantity. The name can be anything for example, the clan that is currently using it. Quantity is "
     "the ammount of blocks you would like to display. To use spaces between names, please use quotes.\n "
     "Example:\n"
-    '/create "CWL Zulu Day 3" 4\n'
-    '/view "CWL Zulu Day 3 --timeout 20m"\n\n')
-    embed.add_field(name="""/create <string> <int>""", value=create, inline=False)
+    f'{prefx}create "CWL Zulu Day 3" 4\n'
+    f'{prefx}view "CWL Zulu Day 3 --timeout 20m"\n\n')
 
     listt = ("Command to list already created instances.")
-    embed.add_field(name="""/listing""", value=listt, inline=False)
 
-    view = ("View an instance already create in active mode. A user simply clicks on the emoji to register for the block. "
-    "By default the panel will expire in 60 seconds. You can supply and an optional timeout option. Be aware of not activating "
-    "multiple instances as it will result in unpredicted behavior. Use the <stop> emoji to quickly stop an active panel.\n\n"
+    view = ("View an instance already created in active mode. A user simply clicks on the emoji to register for the block. "
+    "By default the panel will expire in 60 seconds. You can supply and an optional timeout option. Use the <stop> emoji to quickly stop an active panel.\n\n"
     "Switches supported:\n"
     "--timeout 20s ::--> Stops panel in 20 seconds\n"
     "--timeout 20m ::-> Stops panel in 20 minutes\n"
     "--timeout 20h ::--> Stops panel in 20 hours\n"
-    "--persistent ::-----> Prevent panel from expiring\n [USE STOP BEFORE OPENING NEW PANEL]"
+    "--persistent ::-----> Prevent panel from expiring\n "
+    "Shortcuts supported! -t or -p"
     "")
-    embed.add_field(name="""/view <instance> <swtich>""", value=view, inline=False)
 
     delete = ("Delete an instance.\n\n")
-    embed.add_field(name="""/delete <instance>""", value=delete, inline=False)
 
     clear = ("Clear an instance.\n\n")
-    embed.add_field(name="""/clear <instance>""", value=clear, inline=False)
 
     edit = "Edit an instances available blocks. You can either add or subtract while maintaining the topoff value.\n\n"
-    embed.add_field(name="""/edit <instance> <(+/-) int>""", value=edit, inline=False)
 
-    dbug = "/killbot\n/mode"
-    embed.add_field(name="""Debugging""", value=dbug, inline=False)
+    versioning = (f"Happy Bot Version 1.4 \nhttps://github.com/majordoobie/waritsukeruBot")
 
-    example = ("-----------------------\nExamples")
-    val = ("""/create "CWL Zulu Day 3" 4 \n/view "CWL Zulu Day 3"\n/clear "CWL Zulu Day 3\n/edit "CWL Zulu Day 3" +2 
+    embed = discord.Embed(title="__Happy Bot Commands__", description=desc, url= "https://discordapp.com")
+    embed.add_field(name=f"**{prefx}help**", value="Show this menu", inline=False)
+    embed.add_field(name=f"**{prefx}create** <__Panel Name__> <__Amount__>", value=create, inline=False)
+    embed.add_field(name=f"**{prefx}delete** <__Panel Name__>", value=delete, inline=False)
+    embed.add_field(name=f"**{prefx}view** <__Panel Name__>", value=view, inline=False)
+    embed.add_field(name=f"**{prefx}edit** <__Panel Name__> <__+/-__> <__Amount__>", value=edit, inline=False)
+    embed.add_field(name=f"**{prefx}clear** <__Panel Name__>", value=clear, inline=False)
+    embed.add_field(name=f"**{prefx}listing** <__Panel Name__>", value=listt, inline=False)
+    embed.set_footer(text=versioning)
+    await ctx.send(embed=embed)
     
-    \n\n\nwaritsukeruBot Version 1.3\nhttps://github.com/majordoobie/waritsukeruBot""")
-    embed.add_field(name=example, value=val, inline=False)
-    await ctx.send(embed = embed)
 
 @discord_client.command()
 async def killbot(ctx):

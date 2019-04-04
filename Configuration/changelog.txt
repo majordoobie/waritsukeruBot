@@ -1,0 +1,12 @@
+[Version 1.4] ~ 4APR2019
+[Added] Shortcut for viewing the panels. Instead of using --persistent and --timeout you can also do -p and -t
+[Added] Message check so now multiple instances can be open without interferance 
+[Added] Panel open warning. If a panel is already open it will scream at you... nicely
+
+
+[Version 1.3]
+[Added] Guild assignment to prevent cross chat
+[Added] timeout/persistent switches to /view
+[Added] Debugging commands
+[Added] Argument checking
+[Fixed] Bug preventing the config file from saving and losing instance data after reloads

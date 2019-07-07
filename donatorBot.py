@@ -27,7 +27,7 @@ config = ConfigParser(allow_no_value=True)
 
 # Read the configuratino file based on mode
 if botMode == "liveBot":
-    configLoc = ''
+    configLoc = 'Configuration/happyConfig.ini'
     if os.path.exists(configLoc):
         pass
     else:
@@ -107,7 +107,7 @@ async def help(ctx):
 
     edit = "Edit an instances available blocks. You can either add or subtract while maintaining the topoff value.\n\n"
 
-    versioning = (f"Happy Bot Version 1.4 \nhttps://github.com/majordoobie/waritsukeruBot")
+    versioning = (f"Happy Bot Version 1.5 \nhttps://github.com/majordoobie/waritsukeruBot")
 
     embed = discord.Embed(title="__Happy Bot Commands__", description=desc, url= "https://discordapp.com")
     embed.add_field(name=f"**{prefx}help**", value="Show this menu", inline=False)
@@ -116,7 +116,7 @@ async def help(ctx):
     embed.add_field(name=f"**{prefx}view** <__Panel Name__>", value=view, inline=False)
     embed.add_field(name=f"**{prefx}edit** <__Panel Name__> <__+/-__> <__Amount__>", value=edit, inline=False)
     embed.add_field(name=f"**{prefx}clear** <__Panel Name__>", value=clear, inline=False)
-    embed.add_field(name=f"**{prefx}listing** <__Panel Name__>", value=listt, inline=False)
+    embed.add_field(name=f"**{prefx}list** <__Panel Name__>", value=listt, inline=False)
     embed.set_footer(text=versioning)
     await ctx.send(embed=embed)
     
@@ -178,8 +178,8 @@ async def create_handler(ctx, error):
     await ctx.send(embed = discord.Embed(title="ERROR", description=error.__str__(), color=0xFF0000))
 
 
-@discord_client.command()
-async def listing(ctx):
+@discord_client.command(name="list")
+async def _list(ctx):
     """ Command to list the panels already created """
     if botAPI.rightServer(ctx, config) and botAPI.authorized(ctx, config):
         pass
@@ -187,9 +187,10 @@ async def listing(ctx):
         await ctx.send("Wrong server or you're not authorized to use this.")
 
     await ctx.send("__**Instances**__")
+    block = ""
     for instance in config['instances']:
-        await ctx.send(f"```{'':>6}{instance.title():<20} Blocks: {config[instance.title()]['blocks']}```")
-
+        block +=(f"{instance.title():<20} Blocks: {config[instance.title()]['blocks']}\n")
+    await ctx.send(f"```\n{block}\n```")
 
 @discord_client.command()
 async def delete(ctx, instance):
@@ -255,7 +256,7 @@ async def view(ctx, instance, *opt):
             await ctx.send(embed = discord.Embed(title="ARG ERROR\nInvalid options used. Try /help", color=0xFF0000))
             return
     else:
-        timeout = 60
+        timeout = 57600 # 16 hours
 
     # Open the panel
     instance = instance.title()
@@ -284,7 +285,7 @@ async def view(ctx, instance, *opt):
     # Grab a new panel 
     msg = new_panel(block, instance)
 
-    header = (f"**Instance:** {instance}\n**Timeout:** {timeout} seconds")
+    header = (f"**Instance:** {instance}\n**Timeout:** {timeout/3600} hours")
     await ctx.send(header)
     panel = await ctx.send(f"```{msg}```")
 

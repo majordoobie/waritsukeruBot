@@ -41,7 +41,7 @@ if botMode == "liveBot":
     discord_client.remove_command("help")
 
 elif botMode == "devBot":
-    configLoc = 'Configuration/happyConfig.ini'
+    configLoc = 'Configuration/happyDev.ini'
     if os.path.exists(configLoc):
         pass
     else:
@@ -111,12 +111,15 @@ async def help(ctx):
 
     edit = "Edit an instances available blocks. You can either add or subtract while maintaining the topoff value.\n\n"
 
-    versioning = (f"Happy Bot Version 1.5 \nhttps://github.com/majordoobie/waritsukeruBot")
+    versioning = (f"Happy Bot Version 1.6 \nhttps://github.com/majordoobie/waritsukeruBot")
+
+    force = (f"Force a panel to close. Please use as last resort. Use stop button when possible.")
 
     embed = discord.Embed(title="__Happy Bot Commands__", description=desc, url= "https://discordapp.com")
     embed.add_field(name=f"**{prefx}help**", value="Show this menu", inline=False)
     embed.add_field(name=f"**{prefx}create** <__Panel Name__> <__Amount__>", value=create, inline=False)
     embed.add_field(name=f"**{prefx}delete** <__Panel Name__>", value=delete, inline=False)
+    embed.add_field(name=f"**{prefx}force_stop** <__Panel Name__>", value=force, inline=False)
     embed.add_field(name=f"**{prefx}view** <__Panel Name__>", value=view, inline=False)
     embed.add_field(name=f"**{prefx}edit** <__Panel Name__> <__+/-__> <__Amount__>", value=edit, inline=False)
     embed.add_field(name=f"**{prefx}clear** <__Panel Name__>", value=clear, inline=False)
@@ -265,7 +268,6 @@ async def view(ctx, instance, *opt):
     # Open the panel
     instance = instance.title()
     # Check if the instance name is in the file
-    print(config['instances'][instance])
     if instance in config['instances']:
         pass
     else:
@@ -356,6 +358,29 @@ async def view_handler(ctx, error):
     await ctx.send(embed = discord.Embed(title="ERROR", description=error.__str__(), color=0xFF0000))
 
 @discord_client.command()
+async def force_stop(ctx, instance):
+    if botAPI.rightServer(ctx, config) and botAPI.authorized(ctx, config):
+        pass
+    else:
+        await ctx.send("Wrong server or you're not authorized to use this.")
+
+    instance = instance.title()
+    if instance in config['instances']:
+        pass
+    else:
+        await ctx.send(embed = discord.Embed(title=f"INSTANCE ERROR\nInstance [{instance}] was not found.", color=0xFF0000))
+        return
+
+    if config["instances"][instance] == "True":
+        config["instances"][instance] = "False"
+        with open(configLoc, 'w') as f:
+                config.write(f)
+        await ctx.send(f"<:{config['Emoji']['happy']}> Aye!")
+    else:
+        await ctx.send(embed = discord.Embed(title=f"INSTANCE ERROR\nInstance [{instance}] Is already closed.", color=0xFF0000))
+        return
+
+@discord_client.command()
 async def edit(ctx, instance, quant):
     if botAPI.rightServer(ctx, config) and botAPI.authorized(ctx, config):
         pass
@@ -376,42 +401,46 @@ async def edit(ctx, instance, quant):
 
 
     if instance in config['instances']:
-        old_block = config[instance]['blocks']
-        if operation == "+":
-            new_block = int(old_block) + int(value)
-            if 1 <= int(new_block) <=10:
-                pass
-            else:
-                await ctx.send(embed = discord.Embed(title=f"Index Range Error",description = f"Block Size: [ {new_block} ] \n(1<= [ Block Size ] <=10)", color=0xFF0000))
-                return
-        elif operation == "-":
-            new_block = int(old_block) - int(value)
-            if 1 <= int(new_block) <=10:
-                pass
-            else:
-                await ctx.send(embed = discord.Embed(title=f"Index Range Error",description = f"Block Size: [ {new_block} ] \n(1<= [ Block Size ] <=10)", color=0xFF0000))
-                return
-
-        config.set(instance, "blocks", str(new_block)) # set new blocks value
-        topoffVal = config[instance]['topoff']
-        config[instance].pop('topoff')
-        lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
-
-        if int(old_block) < int(new_block):
-            for i in range(0, int(new_block)):
-                if lister[i] in config[instance]:
+        if config["instances"][instance] == "False":
+            old_block = config[instance]['blocks']
+            if operation == "+":
+                new_block = int(old_block) + int(value)
+                if 1 <= int(new_block) <=10:
                     pass
                 else:
-                    config.set(instance, lister[i], '')
-            config.set(instance, "topoff", topoffVal)
-            await ctx.send(f"<:{config['Emoji']['happy']}> Aye!")
-            return
+                    await ctx.send(embed = discord.Embed(title=f"Index Range Error",description = f"Block Size: [ {new_block} ] \n(1<= [ Block Size ] <=10)", color=0xFF0000))
+                    return
+            elif operation == "-":
+                new_block = int(old_block) - int(value)
+                if 1 <= int(new_block) <=10:
+                    pass
+                else:
+                    await ctx.send(embed = discord.Embed(title=f"Index Range Error",description = f"Block Size: [ {new_block} ] \n(1<= [ Block Size ] <=10)", color=0xFF0000))
+                    return
 
-        elif int(old_block) > int(new_block):
-            for i in range(int(new_block), int(old_block)):
-                config[instance].pop(lister[i])
-            config.set(instance, "topoff", topoffVal)
-            await ctx.send(f"<:{config['Emoji']['happy']}> Aye!")
+            config.set(instance, "blocks", str(new_block)) # set new blocks value
+            topoffVal = config[instance]['topoff']
+            config[instance].pop('topoff')
+            lister = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+
+            if int(old_block) < int(new_block):
+                for i in range(0, int(new_block)):
+                    if lister[i] in config[instance]:
+                        pass
+                    else:
+                        config.set(instance, lister[i], '')
+                config.set(instance, "topoff", topoffVal)
+                await ctx.send(f"<:{config['Emoji']['happy']}> Aye!")
+                return
+
+            elif int(old_block) > int(new_block):
+                for i in range(int(new_block), int(old_block)):
+                    config[instance].pop(lister[i])
+                config.set(instance, "topoff", topoffVal)
+                await ctx.send(f"<:{config['Emoji']['happy']}> Aye!")
+                return
+        else:
+            await ctx.send(embed = discord.Embed(title=f"INSTANCE ERROR\nInstance [{instance}] is open. Please close before editing.", color=0xFF0000))
             return
     else:
         await ctx.send(embed = discord.Embed(title="INPUT ERROR\nNo instance of that name available.", color=0xFF0000))

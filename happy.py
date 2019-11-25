@@ -111,7 +111,7 @@ async def help(ctx):
 
     edit = "Edit an instances available blocks. You can either add or subtract while maintaining the topoff value.\n\n"
 
-    versioning = (f"Happy Bot Version 1.6 \nhttps://github.com/majordoobie/waritsukeruBot")
+    versioning = (f"Happy Bot Version 1.7 \nhttps://github.com/majordoobie/waritsukeruBot")
 
     force = (f"Force a panel to close. Please use as last resort. Use stop button when possible.")
 

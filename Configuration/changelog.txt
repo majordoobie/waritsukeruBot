@@ -1,3 +1,6 @@
+[Version 1.7] ~ 25NOV2019
+[Updated] Discord wrapper causing the bot to crash when displaying reactions. This is due to changes in the discord API
+
 [Version 1.4] ~ 4APR2019
 [Added] Shortcut for viewing the panels. Instead of using --persistent and --timeout you can also do -p and -t
 [Added] Message check so now multiple instances can be open without interferance 

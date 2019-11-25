@@ -2,3 +2,4 @@
 .vscode/settings.json
 APIs/__pycache__/
 venv_happy
+vent_happy/*

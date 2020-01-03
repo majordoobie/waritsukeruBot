@@ -1,0 +1,14 @@
+version: '3.7'
+services:
+  happy_bot:
+    container_name: happy_bot
+    restart: always
+    build: .
+    volumes:
+      - .:/usr/src/app
+    networks:
+      - happy_net
+networks:
+  happy_net:
+    name: happy_net
+    driver: bridge

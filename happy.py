@@ -7,10 +7,12 @@ import asyncio
 from sys import argv
 from sys import exit as ex # Avoid exit built in
 import os
+from pathlib import Path
 
 #Change working dir
-WORK_DIR = '/home/doob/Documents/Bots/Happy'
-os.chdir(WORK_DIR)
+WORK_DIR = Path(__file__).parent
+# WORK_DIR = '/home/doob/Documents/Bots/Happy'
+# os.chdir(WORK_DIR)
 
 #####################################################################################################################
                                              # Set up the environment
